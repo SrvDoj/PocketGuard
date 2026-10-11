@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PocketGuard - Personal Finance Tracker</title>
+<meta name="description" content="PocketGuard helps you track income, expenses, bills, budgets and savings goals.">
+<meta name="theme-color" content="#a67c52">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 6 90 22v28c0 24-17 38-40 44C27 88 10 74 10 50V22z' fill='%23a67c52'/%3E%3Ccircle cx='50' cy='50' r='16' fill='%23fbf6ee'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fbf6ee;--card:#fffdf9;--ink:#4a3426;--mut:#8a7565;--br:#a67c52;--br2:#e8d7c0;--line:#eadfce;--in:#5f8a5a;--ex:#b0553c;--wa:#d49a3a}
+[data-theme=dark]{--bg:#241b15;--card:#2f241c;--ink:#f3e9dc;--mut:#b9a48f;--br:#c99c6c;--br2:#4a3a2c;--line:#443527;--in:#8cbc86;--ex:#e08a72;--wa:#e5b25d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'Nunito Sans',system-ui,sans-serif}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;margin:0 0 .5rem}
+h2{font-size:1.6rem}h3{font-size:1.1rem}
+#app{display:flex;min-height:100vh}
+aside{width:220px;background:var(--card);border-right:1px solid var(--line);padding:1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:.2rem}
+.logo{display:flex;align-items:center;gap:.5rem;font:700 1.35rem Fraunces,serif;margin-bottom:1rem}
+.logo svg{width:32px;height:32px}
+aside a{display:block;padding:.55rem .8rem;border-radius:12px;color:var(--ink);text-decoration:none;font-weight:600}
+aside a.on,aside a:hover{background:var(--br2)}
+main{flex:1;padding:1.5rem;max-width:1000px;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem;margin-bottom:1rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1rem}
+.big{font:700 1.6rem Fraunces,serif}.lbl{color:var(--mut);font-size:.88rem}
+.in{color:var(--in)}.ex{color:var(--ex)}
+button,input,select,textarea{font:inherit;color:var(--ink)}
+button{background:var(--br2);border:0;border-radius:10px;padding:.45rem .9rem;font-weight:700;cursor:pointer}
+button.pri{background:var(--br);color:#fff}button.sm{padding:.2rem .6rem;font-size:.85rem}button.dng{color:var(--ex)}
+input,select,textarea{background:var(--bg);border:1px solid var(--br2);border-radius:10px;padding:.45rem .6rem;max-width:100%}
+:focus-visible{outline:3px solid var(--br);outline-offset:2px}
+.bar{height:12px;background:var(--br2);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--in)}
+.bar.mid i{background:var(--wa)}.bar.warn i{background:#d97a2b}.bar.over i{background:var(--ex)}
+.row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
+.item{display:flex;justify-content:space-between;gap:.6rem;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--line)}
+.item:last-child{border:0}.item small{color:var(--mut);display:block}
+.tr{display:flex;align-items:flex-end;gap:3px;height:120px}.tr div{flex:1;background:var(--br);border-radius:4px 4px 0 0;min-height:2px}
+.msg{padding:.6rem .9rem;border-radius:12px;background:var(--br2);margin-bottom:.8rem}
+.tag{font-size:.75rem;background:var(--br2);border-radius:99px;padding:.05rem .5rem;margin-left:.3rem}
+table{width:100%;border-collapse:collapse}td,th{padding:.4rem;border-bottom:1px solid var(--line);text-align:left;font-size:.92rem}
+.scroll{overflow-x:auto}
+dialog{border:1px solid var(--br2);border-radius:18px;background:var(--card);color:var(--ink);width:min(94%,440px);padding:1.2rem}
+dialog::backdrop{background:rgba(40,25,15,.5)}
+label{display:block;font-weight:700;margin-top:.6rem;font-size:.9rem}label input,label select,label textarea{width:100%;font-weight:400}
+label.ck{display:flex;gap:.5rem;align-items:center}label.ck input{width:auto}
+#ferr{color:var(--ex);font-weight:700;margin:.5rem 0 0}
+#toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:.6rem 1rem;border-radius:12px;display:none;z-index:9;max-width:90%}
+@media(max-width:760px){#app{display:block}aside{position:fixed;bottom:0;top:auto;left:0;right:0;width:auto;height:auto;flex-direction:row;overflow-x:auto;padding:.3rem;z-index:5;border-top:1px solid var(--line);border-right:0}.logo{display:none}aside a{white-space:nowrap;padding:.5rem .7rem}main{padding:1rem 1rem 5rem}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+<aside id="nav" aria-label="Main"></aside>
+<main id="main"></main>
+</div>
+<dialog id="dlg"><form id="frm" method="dialog"><h3 id="ft"></h3><div id="ff"></div><p id="ferr" role="alert"></p><div class="row" style="margin-top:1rem"><button class="pri">Save</button><button type="button" id="fc">Cancel</button></div></form></dialog>
+<div id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CATS=['Rent or mortgage','Groceries','Restaurants','Transportation','Fuel','Utilities','Phone and internet','Healthcare','Education','Shopping','Family','Insurance','Debt payments','Subscriptions','Entertainment','Business','Other'];
+const INC=['Salary','Business','Freelance','Gift','Refund','Other income'],PM=['Cash','Debit card','Credit card','Bank transfer','Other'];
+const fresh=()=>({tx:[],budgets:{},bills:[],goals:[],set:{cur:'USD',daily:0,roll:false,theme:'light'},al:{}});
+let DB;try{DB=JSON.parse(localStorage.getItem('pg_v1'))||fresh()}catch{DB=fresh()}
+const save=()=>{try{localStorage.setItem('pg_v1',JSON.stringify(DB))}catch{toast('Browser storage is blocked. Data will not be saved.')}};
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+const iso=d=>d.toLocaleDateString('sv'),T=()=>iso(new Date());
+const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d)};
+const fmt=n=>{try{return new Intl.NumberFormat(undefined,{style:'currency',currency:DB.set.cur}).format(n)}catch{return n.toFixed(2)}};
+const sum=a=>a.reduce((s,x)=>s+x.amt,0),exp=()=>DB.tx.filter(x=>x.type==='expense'),inc=()=>DB.tx.filter(x=>x.type==='income');
+const mon=d=>d.slice(0,7),spent=d=>sum(exp().filter(x=>x.date===d));
+function toast(m,ms=2800){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',ms)}
+function limit(d){const b=Number(DB.set.daily)||0;return b?b+(DB.set.roll?Math.max(0,b-spent(addD(d,-1))):0):0}
+const cls=p=>p>=100?'over':p>=80?'warn':p>=50?'mid':'';
+const bar=p=>`<div class="bar ${cls(p)}" role="progressbar" aria-valuenow="${Math.round(p)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.min(100,p)}%"></i></div>`;
+const validDate=s=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(new Date(s+'T00:00:00'));
+const validAmt=v=>{const n=Number(v);return Number.isFinite(n)&&n>0&&n<=1e9?Math.round(n*100)/100:null};
+
+/* forms */
+function form(title,fields,vals,onSave){$('#ft').textContent=title;$('#ferr').textContent='';
+ $('#ff').innerHTML=fields.map(f=>{const v=vals[f.n]??'';return f.t==='check'?`<label class="ck"><input type="checkbox" name="${f.n}" ${v?'checked':''}>${f.l}</label>`:`<label>${f.l}${f.t==='select'?`<select name="${f.n}">${f.o.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select>`:f.t==='textarea'?`<textarea name="${f.n}" rows="2" maxlength="300">${esc(v)}</textarea>`:`<input name="${f.n}" type="${f.t}" value="${esc(v)}" ${f.t==='number'?'step="0.01" min="0"':'maxlength="100"'}>`}</label>`}).join('');
+ $('#frm').onsubmit=e=>{e.preventDefault();const o={};fields.forEach(f=>{const el=$('#frm').elements[f.n];o[f.n]=f.t==='check'?el.checked:el.value.trim()});const er=onSave(o);if(er){$('#ferr').textContent=er;return}$('#dlg').close();save();go()};
+ $('#fc').onclick=()=>$('#dlg').close();$('#dlg').showModal()}
+
+function txForm(type,old){const e=type==='expense';
+ form((old?'Edit ':'Add ')+type,[{n:'amt',l:'Amount',t:'number'},{n:'date',l:'Date',t:'date'},{n:'cat',l:e?'Category':'Source',t:'select',o:e?CATS:INC},{n:'desc',l:'Description',t:'text'},{n:'pm',l:'Payment method',t:'select',o:PM},...(e?[{n:'ess',l:'Essential expense',t:'check'}]:[]),{n:'notes',l:'Notes (optional)',t:'textarea'}],
+  old?{...old}:{date:T(),ess:true},o=>{const a=validAmt(o.amt);if(a===null)return 'Enter an amount greater than 0.';if(!validDate(o.date))return 'Enter a valid date.';
+   const before=spent(T()),r={id:old?.id||uid(),type,amt:a,date:o.date,cat:o.cat,desc:o.desc,pm:o.pm,ess:!!o.ess,notes:o.notes};
+   if(old)Object.assign(old,r);else DB.tx.push(r);toast(old?'Transaction updated':'Transaction added');if(e)alertDaily(before)})}
+function alertDaily(before){const L=limit(T());if(!L)return;const a=spent(T());for(const [p,m] of [[50,'You have used 50% of today\'s budget.'],[80,'You have used 80% of today\'s budget.'],[100,'You have reached today\'s budget.']])if(before/L*100<p&&a/L*100>=p)setTimeout(()=>toast(m,4000),300);if(a>L&&before<=L)setTimeout(()=>toast('You are over today\'s budget by '+fmt(a-L),4000),300)}
+
+/* actions */
+const A={
+ addI:()=>txForm('income'),addE:()=>txForm('expense'),
+ edit:i=>{const t=DB.tx.find(x=>x.id===i);t&&txForm(t.type,t)},
+ del:i=>{if(confirm('Delete this transaction? This cannot be undone.')){DB.tx=DB.tx.filter(x=>x.id!==i);save();go();toast('Transaction deleted')}},
+ addBill:()=>billForm(),editBill:i=>billForm(DB.bills.find(b=>b.id===i)),
+ delBill:i=>{if(confirm('Delete this bill?')){DB.bills=DB.bills.filter(b=>b.id!==i);save();go()}},
+ pay:i=>{const b=DB.bills.find(x=>x.id===i);if(!b)return;if(!b.cc&&confirm('Also record "'+b.name+'" as an expense of '+fmt(b.amt)+'?')){DB.tx.push({id:uid(),type:'expense',amt:b.amt,date:T(),cat:b.cat||'Other',desc:b.name,pm:'Bank transfer',ess:true,notes:'From bill'})}
+  if(b.rec==='once')b.paid=true;else{b.last=T();b.due=nextDue(b.due,b.rec)}save();go();toast('Bill marked paid')},
+ addGoal:()=>goalForm(),editGoal:i=>goalForm(DB.goals.find(g=>g.id===i)),
+ delGoal:i=>{if(confirm('Delete this goal?')){DB.goals=DB.goals.filter(g=>g.id!==i);save();go()}},
+ fund:i=>{const g=DB.goals.find(x=>x.id===i);const v=validAmt(prompt('Amount to add to "'+g.name+'"'));if(v===null)return toast('Enter an amount greater than 0.');g.saved=Math.round((g.saved+v)*100)/100;save();go();toast('Savings updated')},
+ demo:()=>{if(DB.tx.length&&!confirm('Add demo data to your existing data?'))return;demo();save();go();toast('Demo data added')},
+ clear:()=>{if(confirm('Delete ALL your data from this browser? Export a backup first.')){DB=fresh();save();go();toast('All data cleared')}},
+ csv:()=>exportCSV(),bk:()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}));a.download='pocketguard-backup-'+T()+'.json';a.click()},
+ rest:()=>$('#rf').click()};
+function nextDue(d,r){const x=new Date(d+'T00:00:00');if(r==='weekly')x.setDate(x.getDate()+7);else if(r==='monthly')x.setMonth(x.getMonth()+1);else x.setFullYear(x.getFullYear()+1);return iso(x)}
+function billForm(old){form(old?'Edit bill':'Add bill',[{n:'name',l:'Name',t:'text'},{n:'amt',l:'Amount',t:'number'},{n:'due',l:'Due date',t:'date'},{n:'rec',l:'Repeats',t:'select',o:['once','weekly','monthly','yearly']},{n:'cat',l:'Expense category (for optional expense record)',t:'select',o:CATS},{n:'cc',l:'This is a credit card payment (never recorded as a new expense)',t:'check'},{n:'notes',l:'Notes',t:'textarea'}],old||{due:T(),rec:'monthly'},o=>{const a=validAmt(o.amt);if(!o.name)return 'Enter a bill name.';if(a===null)return 'Enter an amount greater than 0.';if(!validDate(o.due))return 'Enter a valid due date.';const r={id:old?.id||uid(),name:o.name,amt:a,due:o.due,rec:o.rec,cat:o.cat,cc:!!o.cc,notes:o.notes,paid:old?.paid||false,last:old?.last};if(old)Object.assign(old,r);else DB.bills.push(r)})}
+function goalForm(old){form(old?'Edit goal':'New savings goal',[{n:'name',l:'Goal name (e.g. Emergency fund)',t:'text'},{n:'target',l:'Target amount',t:'number'},{n:'saved',l:'Amount saved so far',t:'number'},{n:'date',l:'Target date',t:'date'}],old||{saved:0},o=>{const t=validAmt(o.target),s=Number(o.saved||0);if(!o.name)return 'Enter a goal name.';if(t===null)return 'Enter a target greater than 0.';if(!Number.isFinite(s)||s<0)return 'Saved amount cannot be negative.';if(o.date&&!validDate(o.date))return 'Enter a valid date.';const r={id:old?.id||uid(),name:o.name,target:t,saved:s,date:o.date};if(old)Object.assign(old,r);else DB.goals.push(r)})}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a])A[b.dataset.a](b.dataset.i)});
+
+/* pages */
+const NAV=[['dash','Dashboard'],['tx','Transactions'],['bud','Budgets'],['bills','Bills'],['goals','Savings'],['rep','Reports'],['set','Settings']];
+let F={q:'',type:'',cat:'',from:'',to:''},R={from:T().slice(0,8)+'01',to:T()};
+const page=()=>(location.hash.slice(1)||'dash');
+function go(){document.documentElement.dataset.theme=DB.set.theme;
+ $('#nav').innerHTML='<div class="logo"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 6 90 22v28c0 24-17 38-40 44C27 88 10 74 10 50V22z" fill="#a67c52"/><circle cx="50" cy="50" r="17" fill="#fbf6ee"/><path d="M44 50l4 4 9-9" stroke="#a67c52" stroke-width="5" fill="none" stroke-linecap="round"/></svg>PocketGuard</div>'+NAV.map(n=>`<a href="#${n[0]}" class="${page()===n[0]?'on':''}">${n[1]}</a>`).join('');
+ $('#main').innerHTML=({dash,tx,bud,bills,goals,rep,set})[page()]?.()||dash();if(page()==='tx')txList();if(page()==='rep')repOut()}
+addEventListener('hashchange',go);
+
+function catSpend(m){const o={};exp().filter(x=>mon(x.date)===m).forEach(x=>o[x.cat]=(o[x.cat]||0)+x.amt);return o}
+const prevM=m=>{const d=new Date(m+'-01T00:00:00');d.setMonth(d.getMonth()-1);return iso(d).slice(0,7)};
+function insights(){const m=mon(T()),p=prevM(m),c=catSpend(m),pc=catSpend(p),out=[];
+ CATS.forEach(k=>{if(DB.budgets[k]>0&&c[k]){const u=c[k]/DB.budgets[k]*100;if(u>=80)out.push(`You have used ${Math.round(u)}% of your ${k} budget.`)}});
+ for(const k of['Restaurants','Groceries','Shopping','Entertainment'])if(c[k]&&pc[k]&&c[k]>pc[k])out.push(`You spent ${fmt(c[k]-pc[k])} more on ${k.toLowerCase()} this month than last month.`);
+ const ne=sum(exp().filter(x=>mon(x.date)===m&&!x.ess));if(ne>0)out.push(`Non-essential spending this month: ${fmt(ne)}. Cutting some of it is the quickest way to free up money.`);
+ return out.length?out.map(x=>`<div class="msg">${esc(x)}</div>`).join(''):'<p class="lbl">Add more transactions to see insights based on your own data.</p>'}
+function dash(){const t=T(),m=mon(t),bal=sum(inc())-sum(exp()),sv=DB.goals.reduce((s,g)=>s+g.saved,0),ti=sum(inc().filter(x=>x.date===t)),te=spent(t),L=limit(t),mi=sum(inc().filter(x=>mon(x.date)===m)),me=sum(exp().filter(x=>mon(x.date)===m)),p=L?te/L*100:0;
+ const up=DB.bills.filter(b=>!b.paid).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,4),rec=[...DB.tx].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5),c=catSpend(m),ck=Object.keys(c).sort((a,b)=>c[b]-c[a]).slice(0,6);
+ const days=[...Array(14)].map((_,i)=>addD(t,i-13)),sp=days.map(spent),mx=Math.max(1,...sp);
+ return `<h2>Dashboard</h2>${DB.tx.length?'':'<div class="msg">Welcome to PocketGuard. Add your first income or expense, or load demo data in Settings.</div>'}
+ <div class="row"><button class="pri" data-a="addI">+ Income</button><button class="pri" data-a="addE">+ Expense</button></div>
+ <div class="grid"><div class="card"><div class="lbl">Account balance (income minus expenses)</div><div class="big">${fmt(bal)}</div></div>
+ <div class="card"><div class="lbl">Cash available (balance minus savings set aside)</div><div class="big">${fmt(bal-sv)}</div></div>
+ <div class="card"><div class="lbl">Set aside for goals (your own tracking)</div><div class="big in">${fmt(sv)}</div></div></div>
+ <div class="card" style="margin-bottom:1rem"><h3>Today's budget</h3>${L?`${bar(p)}<p>${fmt(te)} spent of ${fmt(L)}. ${te>L?`<b class="ex">Over by ${fmt(te-L)}.</b>`:`<b>${fmt(L-te)} left.</b>`} ${p>=100?'Daily budget reached.':p>=80?'Over 80% used.':p>=50?'Over half used.':''}</p>`:'<p class="lbl">No daily limit set. Set one in Budgets.</p>'}
+ <div class="grid" style="margin:0"><div><span class="lbl">Today's income</span><div class="big in">${fmt(ti)}</div></div><div><span class="lbl">Today's expenses</span><div class="big ex">${fmt(te)}</div></div><div><span class="lbl">Month income</span><div class="big in">${fmt(mi)}</div></div><div><span class="lbl">Month expenses</span><div class="big ex">${fmt(me)}</div></div></div></div>
+ <div class="grid"><div class="card"><h3>Spending, last 14 days</h3><div class="tr" role="img" aria-label="Daily spending bars">${sp.map((v,i)=>`<div title="${days[i]}: ${fmt(v)}" style="height:${v/mx*100}%"></div>`).join('')}</div></div>
+ <div class="card"><h3>Top categories this month</h3>${ck.length?ck.map(k=>`<div class="item"><span>${esc(k)}</span><b>${fmt(c[k])}</b></div>`).join(''):'<p class="lbl">No expenses this month.</p>'}</div></div>
+ <div class="grid"><div class="card"><h3>Upcoming bills</h3>${up.length?up.map(b=>`<div class="item"><span>${esc(b.name)}<small>Due ${b.due}</small></span><b>${fmt(b.amt)}</b></div>`).join(''):'<p class="lbl">No bills yet.</p>'}</div>
+ <div class="card"><h3>Recent transactions</h3>${rec.length?rec.map(x=>`<div class="item"><span>${esc(x.desc||x.cat)}<small>${x.date}, ${esc(x.cat)}</small></span><b class="${x.type==='income'?'in':'ex'}">${x.type==='income'?'+':'-'}${fmt(x.amt)}</b></div>`).join(''):'<p class="lbl">Nothing yet.</p>'}</div></div>
+ <div class="card"><h3>Insights</h3>${insights()}</div>`}
+function tx(){return `<h2>Transactions</h2><div class="row"><button class="pri" data-a="addI">+ Income</button><button class="pri" data-a="addE">+ Expense</button></div>
+ <div class="row"><input type="search" id="fq" placeholder="Search" aria-label="Search" value="${esc(F.q)}"><select id="ft2" aria-label="Type"><option value="">All</option><option value="income">Income</option><option value="expense">Expenses</option></select><select id="fc2" aria-label="Category"><option value="">All categories</option>${[...INC,...CATS].map(c=>`<option>${esc(c)}</option>`).join('')}</select><input type="date" id="ff1" aria-label="From"><input type="date" id="ff2" aria-label="To"></div><div class="card" id="txl"></div>`}
+function txList(){['fq','ft2','fc2','ff1','ff2'].forEach((id,i)=>{const el=$('#'+id);const k=['q','type','cat','from','to'][i];el.value=F[k];el.oninput=()=>{F[k]=el.value;txList()}});
+ const q=F.q.toLowerCase(),l=DB.tx.filter(x=>(!F.type||x.type===F.type)&&(!F.cat||x.cat===F.cat)&&(!F.from||x.date>=F.from)&&(!F.to||x.date<=F.to)&&(!q||(x.desc+x.cat+x.notes).toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date));
+ $('#txl').innerHTML=l.length?`<div class="scroll"><table><tr><th>Date</th><th>Details</th><th>Amount</th><th></th></tr>${l.map(x=>`<tr><td>${x.date}</td><td>${esc(x.desc||'(no description)')}<small class="lbl"> ${esc(x.cat)}, ${esc(x.pm)}</small>${x.type==='expense'&&!x.ess?'<span class="tag">non-essential</span>':''}</td><td class="${x.type==='income'?'in':'ex'}"><b>${x.type==='income'?'+':'-'}${fmt(x.amt)}</b></td><td><button class="sm" data-a="edit" data-i="${x.id}">Edit</button> <button class="sm dng" data-a="del" data-i="${x.id}">Delete</button></td></tr>`).join('')}</table></div>`:'<p class="lbl">No transactions match. Add one or clear the filters.</p>'}
+function bud(){const m=mon(T()),c=catSpend(m),t=T(),L=limit(t),p=L?spent(t)/L*100:0;
+ return `<h2>Budgets</h2><div class="card" style="margin-bottom:1rem"><h3>Daily limit</h3><div class="row"><input type="number" id="dl" min="0" step="0.01" value="${DB.set.daily||''}" placeholder="Daily limit" aria-label="Daily limit"><button class="pri" id="dls">Save limit</button></div>
+ <label class="ck"><input type="checkbox" id="roll" ${DB.set.roll?'checked':''}>Roll over yesterday's unused amount (today's limit = daily limit + yesterday's unused, one day only)</label>
+ ${L?`<p>Today's limit: <b>${fmt(L)}</b>. Spent ${fmt(spent(t))}. Remaining ${fmt(Math.max(0,L-spent(t)))}.</p>${bar(p)}`:''}</div>
+ <div class="card"><h3>Monthly category budgets</h3><div class="scroll"><table><tr><th>Category</th><th>Budget</th><th>Spent</th><th>Left</th><th>Used</th></tr>${CATS.map(k=>{const b=DB.budgets[k]||0,s=c[k]||0,p=b?s/b*100:0;return `<tr><td>${esc(k)}</td><td><input type="number" min="0" step="1" data-b="${esc(k)}" value="${b||''}" style="width:90px" aria-label="Budget for ${esc(k)}"></td><td>${fmt(s)}</td><td class="${b&&s>b?'ex':''}">${b?fmt(b-s):'-'}</td><td style="min-width:110px">${b?bar(p)+`<small class="lbl">${Math.round(p)}%${p>=100?' over budget':p>=80?' near limit':''}</small>`:''}</td></tr>`}).join('')}</table></div></div>`}
+document.addEventListener('change',e=>{const k=e.target.dataset.b;if(k!==undefined){const v=Number(e.target.value||0);if(!Number.isFinite(v)||v<0)return toast('Budget must be 0 or more.');DB.budgets[k]=v;save();go();toast('Budget saved')}
+ if(e.target.id==='roll'){DB.set.roll=e.target.checked;save();go()}
+ if(e.target.id==='cur'){DB.set.cur=e.target.value;save();go()}
+ if(e.target.id==='rf'){const f=e.target.files[0];f&&f.text().then(t=>{try{const j=JSON.parse(t);if(!Array.isArray(j.tx)||!Array.isArray(j.bills))throw 0;DB={...fresh(),...j};save();go();toast('Backup restored')}catch{toast('That is not a valid PocketGuard backup.')}})}});
+document.addEventListener('click',e=>{if(e.target.id==='dls'){const v=Number($('#dl').value||0);if(!Number.isFinite(v)||v<0)return toast('Enter 0 or a positive amount.');DB.set.daily=v;save();go();toast('Daily limit saved')}
+ if(e.target.id==='th'){DB.set.theme=DB.set.theme==='dark'?'light':'dark';save();go()}});
+function bills(){const t=T(),open=DB.bills.filter(b=>!b.paid).sort((a,b)=>a.due.localeCompare(b.due)),od=open.filter(b=>b.due<t),up=open.filter(b=>b.due>=t),pd=DB.bills.filter(b=>b.paid);
+ const li=(b,pay)=>`<div class="item"><span>${esc(b.name)}${b.cc?'<span class="tag">credit card</span>':''}<small>Due ${b.due}, ${b.rec}${b.last?', last paid '+b.last:''}</small></span><span><b>${fmt(b.amt)}</b> ${pay?`<button class="sm pri" data-a="pay" data-i="${b.id}">Mark paid</button>`:''}<button class="sm" data-a="editBill" data-i="${b.id}">Edit</button><button class="sm dng" data-a="delBill" data-i="${b.id}">Delete</button></span></div>`;
+ const sec=(h,l,p,c)=>`<div class="card" style="margin-bottom:1rem"><h3 class="${c||''}">${h}</h3>${l.length?l.map(b=>li(b,p)).join(''):'<p class="lbl">None.</p>'}</div>`;
+ return `<h2>Bills</h2><p class="lbl">Marking a bill paid never creates an expense automatically. You are asked whether to record it, and credit card payments are never recorded, so purchases are not counted twice.</p><div class="row"><button class="pri" data-a="addBill">+ Add bill</button></div>${sec('Overdue',od,1,'ex')}${sec('Upcoming',up,1)}${sec('Paid',pd,0)}`}
+function goals(){return `<h2>Savings goals</h2><p class="lbl">Amounts are tracked by you. They are not verified by a bank.</p><div class="row"><button class="pri" data-a="addGoal">+ New goal</button></div>${DB.goals.length?`<div class="grid">${DB.goals.map(g=>{const p=g.saved/g.target*100;return `<div class="card"><h3>${esc(g.name)}</h3>${bar(Math.min(100,p)).replace('over','')}<p>${fmt(g.saved)} of ${fmt(g.target)} (${Math.round(p)}%)<br>Remaining: ${fmt(Math.max(0,g.target-g.saved))}${g.date?'<br>Target date: '+g.date:''}</p><div class="row"><button class="sm pri" data-a="fund" data-i="${g.id}">Add funds</button><button class="sm" data-a="editGoal" data-i="${g.id}">Edit</button><button class="sm dng" data-a="delGoal" data-i="${g.id}">Delete</button></div></div>`}).join('')}</div>`:'<div class="msg">No goals yet. Create one such as an emergency fund or a vacation.</div>'}`}
+function rep(){return `<h2>Reports</h2><div class="row"><label>From <input type="date" id="r1" value="${R.from}"></label><label>To <input type="date" id="r2" value="${R.to}"></label><button data-a="csv">Export CSV</button></div><div id="ro"></div>`}
+function inR(){return DB.tx.filter(x=>x.date>=R.from&&x.date<=R.to)}
+function repOut(){$('#r1').onchange=$('#r2').onchange=()=>{if(!validDate($('#r1').value)||!validDate($('#r2').value)||$('#r1').value>$('#r2').value)return toast('Choose a valid date range.');R.from=$('#r1').value;R.to=$('#r2').value;repOut()};
+ const l=inR(),e=l.filter(x=>x.type==='expense'),i=sum(l.filter(x=>x.type==='income')),ex=sum(e),c={},w={},mo={};
+ e.forEach(x=>{c[x.cat]=(c[x.cat]||0)+x.amt;const d=new Date(x.date+'T00:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));const k=iso(d);w[k]=(w[k]||0)+x.amt});
+ l.forEach(x=>{const k=mon(x.date);mo[k]=mo[k]||{i:0,e:0};mo[k][x.type==='income'?'i':'e']+=x.amt});
+ const ck=Object.keys(c).sort((a,b)=>c[b]-c[a]),mx=Math.max(1,...Object.values(c)),wk=Object.keys(w).sort(),wm=Math.max(1,...Object.values(w));
+ $('#ro').innerHTML=l.length?`<div class="grid"><div class="card"><div class="lbl">Income</div><div class="big in">${fmt(i)}</div></div><div class="card"><div class="lbl">Expenses</div><div class="big ex">${fmt(ex)}</div></div><div class="card"><div class="lbl">Net</div><div class="big">${fmt(i-ex)}</div></div></div>
+ <div class="grid"><div class="card"><h3>Spending by category</h3>${ck.map(k=>`<div class="item"><span style="flex:1">${esc(k)}${bar(c[k]/mx*100).replace('role="progressbar"','')}</span><b>${fmt(c[k])}</b></div>`).join('')||'<p class="lbl">No expenses.</p>'}</div>
+ <div class="card"><h3>Weekly expenses (weeks start Monday)</h3>${wk.map(k=>`<div class="item"><span style="flex:1">${k}${bar(w[k]/wm*100).replace('role="progressbar"','')}</span><b>${fmt(w[k])}</b></div>`).join('')||'<p class="lbl">No expenses.</p>'}</div></div>
+ <div class="card"><h3>Income versus expenses by month</h3><table><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th></tr>${Object.keys(mo).sort().map(k=>`<tr><td>${k}</td><td class="in">${fmt(mo[k].i)}</td><td class="ex">${fmt(mo[k].e)}</td><td>${fmt(mo[k].i-mo[k].e)}</td></tr>`).join('')}</table></div>`:'<p class="lbl">No transactions in this range.</p>'}
+function exportCSV(){const q=v=>{let s=String(v??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'};const rows=[['Date','Type','Category','Description','Amount','Payment method','Essential','Notes'],...inR().map(x=>[x.date,x.type,x.cat,x.desc,x.amt.toFixed(2),x.pm,x.type==='expense'?(x.ess?'yes':'no'):'',x.notes])];
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download='pocketguard-'+R.from+'_'+R.to+'.csv';a.click();toast('CSV exported')}
+function set(){return `<h2>Settings</h2><div class="card" style="margin-bottom:1rem"><h3>Preferences</h3><div class="row"><label>Currency <select id="cur">${['USD','EUR','GBP','CAD','AUD','RUB'].map(c=>`<option ${c===DB.set.cur?'selected':''}>${c}</option>`).join('')}</select></label><button id="th">${DB.set.theme==='dark'?'Switch to light mode':'Switch to dark mode'}</button></div></div>
+ <div class="card" style="margin-bottom:1rem"><h3>Your data</h3><p class="lbl">Everything is stored only in this browser on this device. Clearing browser data deletes it, so export a backup regularly.</p><div class="row"><button class="pri" data-a="bk">Download backup</button><button data-a="rest">Restore backup</button><button data-a="demo">Load demo data</button><button class="dng" data-a="clear">Delete all data</button></div><input type="file" id="rf" accept=".json" hidden></div>
+ <p class="lbl">PocketGuard never asks for bank passwords or card numbers and sends nothing to any server or AI service.</p>`}
+function demo(){let s=7;const r=()=>(s=s*16807%2147483647)/2147483647,t=T();
+ for(let n=0;n<75;n++){const d=addD(t,-n),dd=new Date(d+'T00:00:00').getDate();
+  if(dd===1)DB.tx.push({id:uid(),type:'income',amt:3200,date:d,cat:'Salary',desc:'Monthly salary',pm:'Bank transfer',ess:true,notes:'Demo'});
+  if(dd===3)DB.tx.push({id:uid(),type:'expense',amt:1100,date:d,cat:'Rent or mortgage',desc:'Rent',pm:'Bank transfer',ess:true,notes:'Demo'});
+  if(r()<.55)DB.tx.push({id:uid(),type:'expense',amt:Math.round((20+r()*60)*100)/100,date:d,cat:'Groceries',desc:'Groceries',pm:'Debit card',ess:true,notes:'Demo'});
+  if(r()<.3)DB.tx.push({id:uid(),type:'expense',amt:Math.round((8+r()*35)*100)/100,date:d,cat:'Restaurants',desc:'Eating out',pm:'Credit card',ess:false,notes:'Demo'});
+  if(r()<.25)DB.tx.push({id:uid(),type:'expense',amt:Math.round((15+r()*40)*100)/100,date:d,cat:'Transportation',desc:'Transit',pm:'Debit card',ess:true,notes:'Demo'})}
+ if(!DB.set.daily)DB.set.daily=60;Object.assign(DB.budgets,{Groceries:500,Restaurants:150,Transportation:200});
+ DB.bills.push({id:uid(),name:'Internet',amt:55,due:addD(t,5),rec:'monthly',cat:'Utilities',cc:false,notes:'Demo'},{id:uid(),name:'Credit card payment',amt:240,due:addD(t,-2),rec:'monthly',cat:'Debt payments',cc:true,notes:'Demo'});
+ DB.goals.push({id:uid(),name:'Emergency fund',target:3000,saved:850,date:addD(t,240)})}
+go();
+</script>
+</body>
+</html>
